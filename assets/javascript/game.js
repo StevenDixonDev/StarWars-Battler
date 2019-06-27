@@ -149,8 +149,6 @@ const armies = [
 // list of sound effects
 const soundEffects = []
 
-
-
 // function to create a new army
 function createArmy(army){
   this.hp = army.maxHp;
@@ -191,9 +189,8 @@ function createArmy(army){
   }
 }
 
-
 let myArmy = new createArmy(armies[1]);
 
-console.log(myArmy)
+console.log(myArmy);
 
-console.log(myArmy.attack(5))
+console.log(myArmy.attack(5));
