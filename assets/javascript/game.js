@@ -60,11 +60,11 @@ const armies = [
     maxHp: 50,
     evasion: 5,
     //Madines Rules: deals double damage when hp is low
-    special:  function(){},
+    special: function () { },
     alignment: "Republic",
     picture: {
-      ground: '',
-      space: ''
+      ground: 'Alliance Army-ground.png',
+      space: 'Alliance Army-space.jpg'
     }
   },
   {
@@ -75,11 +75,11 @@ const armies = [
     maxHp: 50,
     evasion: 2,
     //Indomitable Force: Takes no damage for a turn after making a attack
-    special:  function(){},
+    special: function () { },
     alignment: "Sith",
     picture: {
-      ground: '',
-      space: ''
+      ground: 'droid army-ground.jpg',
+      space: 'droid army-space.jpg'
     }
   },
   {
@@ -90,11 +90,11 @@ const armies = [
     maxHp: 50,
     evasion: 2,
     //special: Gungan Shields: increases evasion by *2?
-    special:  function(){},
+    special: function () { },
     alignment: "Republic",
     picture: {
-      ground: '',
-      space: ''
+      ground: 'Gungan-ground.jpg',
+      space: 'Gungan-space.png'
     }
   },
   {
@@ -105,11 +105,11 @@ const armies = [
     maxHp: 50,
     evasion: 2,
     //Prowess of the Sith: Lowers enemy evasion 
-    special:  function(){},
+    special: function () { },
     alignment: "Sith",
     picture: {
-      ground: '',
-      space: ''
+      ground: 'imperial army-ground.jpg',
+      space: 'imperial space.jpg'
     }
   },
   {
@@ -120,11 +120,11 @@ const armies = [
     maxHp: 50,
     evasion: 2,
     //Backup: Call in an extra attack from space
-    special:  function(){},
+    special: function () { },
     alignment: "Sith",
     picture: {
-      ground: '',
-      space: ''
+      ground: 'republic-ground.png',
+      space: 'republic-space.png'
     }
   },
   {
@@ -132,14 +132,14 @@ const armies = [
     power: 10,
     retaliation: 10,
     attacks: 2,
-    maxHp: 0,
-    evasion: 0,
+    maxHp: 50,
+    evasion: 2,
     //Gurrella warfare: 
-    special:  function(){},
+    special: function () { },
     alignment: "Republic",
     picture: {
-      ground: '',
-      space: ''
+      ground: 'rebel-ground.jpg',
+      space: 'rebel-space.jpg'
     }
   }
 ]
@@ -150,7 +150,7 @@ const armies = [
 const soundEffects = []
 
 // function to create a new army
-function createArmy(army){
+function createArmy(army) {
   this.hp = army.maxHp;
   this.power = army.power;
   this.name = army.name;
@@ -158,39 +158,128 @@ function createArmy(army){
   this.evasion = army.evasion;
   this.retaliation = army.retaliation;
   this.special = army.special;
-  this.attack = function(evasion = 0){
+  this.attack = function (evasion = 0) {
     //handles attack damage
     let damage = 0;
     // army attacks = to number of attacks but power is random
-    for(let i = 0; i < this.attacks; i++){
-      damage += Math.floor(Math.random()*this.power)
+    for (let i = 0; i < this.attacks; i++) {
+      damage += Math.floor(Math.random() * this.power)
     }
     // substract other armies evasion to calculate total damage
     damage = damage - evasion;
     // if damage is negative set it to zero
-    if(damage < 0) damage = 0;
+    if (damage < 0) damage = 0;
     return damage;
   }
-  this.retaliate = function(evasion = 0){
+  this.retaliate = function (evasion = 0) {
     let damage = 0;
-    for(let i = 0; i < this.attacks; i++){
-      damage += Math.floor(Math.random()*this.retaliation)
+    for (let i = 0; i < this.attacks; i++) {
+      damage += Math.floor(Math.random() * this.retaliation)
     }
     damage = damage - evasion;
-    if(damage < 0) damage = this.power;
+    // make sure the enemy does damage
+    if (damage < 0) damage = this.power;
     return damage;
   }
-  this.levelUp = function(){
-    // when player levels up 
-    this.attacks+=1;
+  this.levelUp = function () {
+    // when player levels up increase number of attacks
+    this.attacks += 1;
   }
-  this.useSpecial = function(){
+  this.useSpecial = function () {
+    // not completely definite yet.
     this.special();
   }
 }
 
 let myArmy = new createArmy(armies[1]);
 
-console.log(myArmy);
-
 console.log(myArmy.attack(5));
+
+// Create Menu Logic
+
+
+const Game = {
+  data: {
+    gameState: 'menu',
+    playerChoice: null,
+    enemyChoice: null,
+    turn: '',
+  },
+  setTurn: function (whosTurn) {
+    // can be player or computer
+    this.data.turn = whosTurn;
+  },
+  setGameState: function (newState) {
+    // states can be 
+    // menu
+    // playing
+    // end?
+    this.data.state = newState;
+  },
+  setPlayerArmy: function(value){
+
+  },
+  init: function () {
+    this.setGameState('menu');
+    this.setTurn('player');
+    this.render();
+    this.handleInput();
+  },
+  render: function () {
+    switch (this.data.gameState) {
+      case 'menu': renderMenu(this); break;
+      case 'playing': renderGame(this); break;
+      case 'end': renderEnd(this); break;
+    }
+  },
+  handleInput: function(){
+    switch(this.data.gameState){
+      case 'menu': handleInputMenu(this); break;
+      case 'playing': handleInputPlaying(this); break;
+      case 'end': handleInputEnd(this); break;
+    }
+  }
+}
+
+function renderMenu(context) {
+  // context = this
+  $.each(armies, function(key, item){
+    console.log(item)
+    $("#army-wrapper").append(`
+      <div class="menu-army" name="${item.name}">
+        <img class="menu-army-img ${item.alignment}" src="./assets/images/${item.picture.ground}"></img>
+        <h2 class="menu-army-title" >${item.name}</h2>
+      </div>
+    `)
+  }) 
+
+}
+
+function renderGame(context) {
+  // context = this
+
+}
+
+function renderEnd(context) {
+  //status is our win or lose
+}
+
+function handleInputMenu(context){
+  $('.menu-army').click(function(){
+    context.setPlayerArmy($(this).attr('name'));
+    $('#menu').toggleClass('zoomout');
+    $('#game').toggleClass('zoomin');
+  })
+}
+
+function handleInputPlaying(context){
+  
+}
+
+function handleInputEnd(context){
+
+}
+
+
+Game.init();
+

@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
+
+*{
+    box-sizing: border-box;
+}
+
+p,h1,h2,h3,h4,h5,h6{
+    font-family: 'Open Sans', sans-serif;
+}
+
+body, html{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+}
+
+body{
+    background-image: url(../images/background.jpg);
+}
+
+h1{
+    font-size: 1.8rem;
+}
+
+h2{
+    font-size: 1.5rem;
+}
+
+h3{
+    font-size: 1.2rem;
+}
+
+#end{
+    display: none;
+}
+
+#menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.menu-intro-title {
+    color: rgb(255, 200, 17);
+    text-align: center;
+    margin-bottom: 3em;
+    font-size: 3em;
+}
+
+.menu-intro-instructions {
+    color: rgb(145, 145, 241);
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 2em;
+}
+
+#army-wrapper{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-self: center;
+}
+
+.menu-army {
+   height: 300px;
+   background-color: rgb(37, 36, 36); 
+   transition: flex-basis 500ms ease-in-out;
+   flex: 1 0 10em;
+}
+
+.menu-army:hover{
+    flex-basis: 20em;
+    cursor: pointer;
+}
+
+.menu-army-img {
+    width: 100%;
+    height: 90%;
+    display: block;
+    border: 2px solid rgb(37, 36, 36);
+}
+
+.menu-army-title {
+    font-size: 1.5em;
+    text-align: center;
+    color: #fff;
+}
+
+.Sith:hover{
+    border: 2px solid red;
+}
+
+.Republic:hover{
+    border: 2px solid blue;
+}
+
+@keyframes swooshoffscreen{
+    from{
+        transform: translateY(0);
+    }
+    to{
+        transform: translateY(-100vh);
+        display: none;
+    }
+}
+
+@keyframes swooshin{
+    0%{
+        width: 0;
+        display: none;
+    }
+    100%{
+        width: 100%;
+        
+        display: flex;
+    }
+}
+
+.zoomout{
+    animation: 3s swooshoffscreen forwards;
+}
+
+.zoomin{
+    animation: 3s swooshin forwards;
+}
+
+#game{
+    width: 100%;
+    height: 300px;
+    background-color: blue;
+    display: none;
+    animation-delay: 2s;
+    align-self: center;
+}
