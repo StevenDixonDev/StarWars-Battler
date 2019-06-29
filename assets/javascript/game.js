@@ -147,7 +147,24 @@ const armies = [
 
 // to do go find sounds for fight
 // list of sound effects
-const soundEffects = []
+const soundEffects = {
+  music: [
+    "./assets/sounds/Asteroid chase.mp3",
+    "./assets/sounds/falcon.mp3"
+  ],
+  battle: {
+    fire: [
+      "./assets/sounds/tiefighter.mp3",
+      "./assets/sounds/xwingfire.mp3",
+      "./assets/sounds/turretfire.mp3"
+    ],
+    exposion: [
+      "./assets/sounds/explode1.mp3",
+      "./assets/sounds/explode2.mp3"
+    ]
+  },
+  alarm: "./assets/sounds/Battle alarm.mp3"
+}
 
 // function to create a new army
 function createArmy(army) {
@@ -189,41 +206,66 @@ function createArmy(army) {
     // not completely definite yet.
     this.special();
   }
+  return this;
 }
 
-let myArmy = new createArmy(armies[1]);
+//let myArmy = new createArmy(armies[1]);
 
-console.log(myArmy.attack(5));
+//console.log(myArmy.attack(5));
 
 // Create Menu Logic
-
-
 const Game = {
   data: {
+    // keep track of where the game currently is
     gameState: 'menu',
+    // keep track of which person is picking a character in the menu
+    menuState: 'player',
     playerChoice: null,
     enemyChoice: null,
+    // keep track of which turn it is in the game
     turn: '',
+    // keep track of the remaining armies
+    remainingArmies: []
   },
   setTurn: function (whosTurn) {
     // can be player or computer
     this.data.turn = whosTurn;
   },
   setGameState: function (newState) {
-    // states can be 
-    // menu
-    // playing
-    // end?
-    this.data.state = newState;
+    // states can be menu playing end?
+    this.data.gameState = newState;
   },
-  setPlayerArmy: function(value){
-
+  setMenuState: function (newState) {
+    this.data.menuState = newState;
+  },
+  setArmy: function (armyName, user) {
+    // create the army the player picks of the user specified
+    let army = new createArmy(this.getArmy(armyName));
+    if (user === 'player') {
+      this.data.playerChoice = army;
+    } else {
+      this.data.enemyChoice = army;
+    }
+  },
+  getArmy: function (armyName) {
+    // filter through armies to return the one the player picked
+    return armies.filter(function (item) {
+      if (item.name === armyName) {
+        return item
+      }
+    })[0];
+  },
+  removeArmy: function (armyName) {
+    this.data.remainingArmies = this.data.remainingArmies.filter(item => item !== armyName);
   },
   init: function () {
     this.setGameState('menu');
     this.setTurn('player');
+    this.data.remainingArmies = armies.map(item => item.name);
     this.render();
-    this.handleInput();
+  },
+  update: function () {
+    this.render();
   },
   render: function () {
     switch (this.data.gameState) {
@@ -231,9 +273,11 @@ const Game = {
       case 'playing': renderGame(this); break;
       case 'end': renderEnd(this); break;
     }
+    //update the dom event listeners
+    this.handleInput();
   },
-  handleInput: function(){
-    switch(this.data.gameState){
+  handleInput: function () {
+    switch (this.data.gameState) {
       case 'menu': handleInputMenu(this); break;
       case 'playing': handleInputPlaying(this); break;
       case 'end': handleInputEnd(this); break;
@@ -243,18 +287,21 @@ const Game = {
 
 function renderMenu(context) {
   // context = this
-  $.each(armies, function(key, item){
-    console.log(item)
-    $("#army-wrapper").append(`
-      <div class="menu-army" name="${item.name}">
-        <img class="menu-army-img ${item.alignment}" src="./assets/images/${item.picture.ground}"></img>
-        <h2 class="menu-army-title" >${item.name}</h2>
-      </div>
-    `)
-  }) 
-
+  console.log(context.data.remainingArmies);
+  $("#army-wrapper").empty();
+  $.each(context.data.remainingArmies, function (key, army) {
+    //console.log(key, army)
+    armies.forEach(function (item) {
+      if (item.name === army) {
+        $("#army-wrapper").append(`
+           <div class="menu-army" name="${item.name}">
+             <img class="menu-army-img ${item.alignment}" src="./assets/images/${item.picture.ground}"></img>
+             <h2 class="menu-army-title" >${item.name}</h2>
+           </div>`)
+      }
+    });
+  });
 }
-
 function renderGame(context) {
   // context = this
 
@@ -264,20 +311,47 @@ function renderEnd(context) {
   //status is our win or lose
 }
 
-function handleInputMenu(context){
-  $('.menu-army').click(function(){
-    context.setPlayerArmy($(this).attr('name'));
-    $('#menu').toggleClass('zoomout');
-    $('#game').toggleClass('zoomin');
+function handleInputMenu(context) {
+  $('.menu-army').click(function () {
+
+    console.log(context.data.menuState)
+    if (context.data.menuState === 'player') {
+      context.setArmy($(this).attr('name'), 'player');
+      context.setMenuState('enemy');
+    } else if (context.data.menuState === 'enemy') {
+      context.setArmy($(this).attr('name'), 'enemy');
+      context.setMenuState('ready');
+    }
+    console.log(context.data.menuState)
+    console.log(context.data.enemyChoice)
+    // remove the chosen from the remaining armies
+    context.removeArmy($(this).attr('name'));
+    //update the dom
+    if (context.data.menuState === 'ready') {
+      $('#menu').toggleClass('zoomout');
+      $('#game').toggleClass('zoomin');
+    }
+    context.update();
   })
 }
 
-function handleInputPlaying(context){
-  
+function handleInputPlaying(context) {
+
 }
 
-function handleInputEnd(context){
+function handleInputEnd(context) {
 
+}
+
+function playSound() {
+  // need to figure out how to play a sound then play another right after...
+  // var audio = new Audio('audio_file.mp3');
+  // audio.play();
+  // audio.volume = .03;
+
+  // audio.play().then(() => {
+  //   this.audioState = false;
+  // });
 }
 
 
