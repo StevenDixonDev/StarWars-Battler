@@ -214,7 +214,7 @@ function observer(){
 
 const gameObserver = new observer();
 // Create Menu Logic
-const Game = {
+const gameModel = {
   data: {
     // keep track of where the game currently is
     gameState: 'menu',
@@ -265,6 +265,7 @@ const Game = {
     this.setTurn('player');
     this.data.remainingArmies = armies.map(item => item.name);
     //this.update();
+    return this;
   },
   update: function (data) {
     this.data = data;
@@ -294,7 +295,7 @@ function handleInputMenu(context) {
     //update the dom
     if (context.data.menuState === 'ready') {
       $('#menu').toggleClass('zoomout');
-      $('#game').toggleClass('zoomin');
+      $('#game').toggleClass('zoom');
     }
     gameObserver.notify(context.data);
   })
@@ -303,6 +304,9 @@ function handleInputMenu(context) {
 
 const gameView = {
   data: {},
+  init(){
+    return this;
+  },
   update(data){
     this.data = data;
     switch (data.gameState) {
@@ -364,10 +368,11 @@ function playSound() {
 
 $(document).ready(function(){
   // todo these are dependant because of input
-  gameObserver.subscribe(gameView);
-  gameObserver.subscribe(Game);
-  Game.init();
-  gameObserver.notify(Game.data);
+  // initialize the view
+  gameObserver.subscribe(gameView.init());
+  // initialize the game logic
+  gameObserver.subscribe(gameModel.init());
+  gameObserver.notify(gameModel.data);
 });
 
 

@@ -13,7 +13,6 @@ body, html{
     padding: 0;
     width: 100%;
     height: 100vh;
-    display: flex;
 }
 
 body{
@@ -40,13 +39,18 @@ h3{
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .menu-intro-title {
     color: rgb(255, 200, 17);
     text-align: center;
-    margin-bottom: 3em;
-    font-size: 3em;
+    margin-bottom: 1em;
+    font-size: 5em;
 }
 
 .menu-intro-instructions {
@@ -67,11 +71,13 @@ h3{
    height: 300px;
    background-color: rgb(37, 36, 36); 
    transition: flex-basis 500ms ease-in-out;
-   flex: 1 0 10em;
+   flex-grow: 1;
+   flex-shrink: 1;
+   flex-basis: 0;
+   margin: .5em;
 }
 
 .menu-army:hover{
-    flex-basis: 20em;
     cursor: pointer;
 }
 
@@ -96,41 +102,41 @@ h3{
     border: 2px solid blue;
 }
 
-@keyframes swooshoffscreen{
-    from{
-        transform: translateY(0);
-    }
-    to{
-        transform: translateY(-100vh);
-        display: none;
-    }
-}
-
-@keyframes swooshin{
-    0%{
-        width: 0;
-        display: none;
-    }
-    100%{
-        width: 100%;
-        
-        display: flex;
-    }
+#game{
+    height: 300px;
+    background-color: blue;
+    width: 100%;
+    display: flex;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 100vh);
 }
 
 .zoomout{
-    animation: 3s swooshoffscreen forwards;
+    animation: 2s swooshoffscreen forwards;
 }
 
-.zoomin{
-    animation: 3s swooshin forwards;
+.zoom{
+    animation-delay: 5s;
+    animation: 2s swoosh forwards;
 }
 
-#game{
-    width: 100%;
-    height: 300px;
-    background-color: blue;
-    display: none;
-    animation-delay: 2s;
-    align-self: center;
+@keyframes swooshoffscreen{
+    from{
+        transform: translate(-50% , -50%);
+    }
+    to{
+        transform: translate(-50%, -100vh);
+        display: none;
+    }
+}
+
+@keyframes swoosh{
+    from{
+        transform: translate(-50% , 100vh);
+    }
+    to{
+        transform: translate(-50% , -50%);
+    }
 }
