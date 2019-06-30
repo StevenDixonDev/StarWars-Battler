@@ -166,7 +166,7 @@ const soundEffects = {
   alarm: "./assets/sounds/Battle alarm.mp3"
 }
 
-// function to create a new army
+// Army factory function
 function createArmy(army) {
   this.hp = army.maxHp;
   this.power = army.power;
@@ -209,10 +209,48 @@ function createArmy(army) {
   return this;
 }
 
-//let myArmy = new createArmy(armies[1]);
+// create a subscriber for events mainly if we need to do updates
+// function subscriber() {
+//   let subscribers = {};
+//   return {
+//     publish(event, callback) {
+//       // method that adds updated
+//       // if the event does not exist add the event
+//       if (!subscribers[event]) {
+//         subscribers[event] = [];
+//       }
+//       // add callback in event as an array
+//       subscribers[event].push(callback);
+//     },
+//     subscribe(event, data) {
+//       //check to see if event exists
+//       if (!subscribers[event]) return;
+//       // call all callbacks registered to that event
+//       subscribers[event].forEach(subscriberCallback =>
+//         subscriberCallback(data));
+//     }
+//   }
+// }
 
-//console.log(myArmy.attack(5));
+// const subcriberFunction = subscriber();
 
+// create an observer that will update our object when things change
+function observer(){
+  let observers = [];
+  return {
+    subscribe(callback){
+      observers.push(callback);
+    },
+    unsubscribe(f){
+      observers = observers.filter(subsciber => subsciber !== f);
+    },    
+    notify(data){
+      observers.forEach(observer => observer.update(data));
+    }
+  }
+}
+
+const gameObserver = new observer();
 // Create Menu Logic
 const Game = {
   data: {
@@ -262,10 +300,13 @@ const Game = {
     this.setGameState('menu');
     this.setTurn('player');
     this.data.remainingArmies = armies.map(item => item.name);
-    this.render();
+    //this.update();
   },
   update: function () {
+    // render elements that have been updated
     this.render();
+    //update the dom event listeners
+    this.handleInput();
   },
   render: function () {
     switch (this.data.gameState) {
@@ -273,8 +314,6 @@ const Game = {
       case 'playing': renderGame(this); break;
       case 'end': renderEnd(this); break;
     }
-    //update the dom event listeners
-    this.handleInput();
   },
   handleInput: function () {
     switch (this.data.gameState) {
@@ -287,8 +326,13 @@ const Game = {
 
 function renderMenu(context) {
   // context = this
-  console.log(context.data.remainingArmies);
+  // side effect is it clears the event listeners
   $("#army-wrapper").empty();
+  if (context.data.menuState === 'player') {
+    $(".menu-intro-instructions").text("Select Your Army:");
+  } else if (context.data.menuState === 'enemy') {
+    $(".menu-intro-instructions").text("Select the Enemy Army:");
+  }
   $.each(context.data.remainingArmies, function (key, army) {
     //console.log(key, army)
     armies.forEach(function (item) {
@@ -313,8 +357,6 @@ function renderEnd(context) {
 
 function handleInputMenu(context) {
   $('.menu-army').click(function () {
-
-    console.log(context.data.menuState)
     if (context.data.menuState === 'player') {
       context.setArmy($(this).attr('name'), 'player');
       context.setMenuState('enemy');
@@ -322,8 +364,6 @@ function handleInputMenu(context) {
       context.setArmy($(this).attr('name'), 'enemy');
       context.setMenuState('ready');
     }
-    console.log(context.data.menuState)
-    console.log(context.data.enemyChoice)
     // remove the chosen from the remaining armies
     context.removeArmy($(this).attr('name'));
     //update the dom
@@ -331,7 +371,7 @@ function handleInputMenu(context) {
       $('#menu').toggleClass('zoomout');
       $('#game').toggleClass('zoomin');
     }
-    context.update();
+    gameObserver.notify();
   })
 }
 
@@ -354,6 +394,10 @@ function playSound() {
   // });
 }
 
+$(document).ready(function(){
+  gameObserver.subscribe(Game);
+  Game.init();
+  gameObserver.notify();
+});
 
-Game.init();
 
