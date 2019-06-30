@@ -6,48 +6,10 @@
 
   instead of direct numbers players gain more power in the realm of number of attacks
 
-
-  Alliance Army = {
-    special: Madines Rules: deals double damage when hp is low
-    alignment: Republic
-  },
-
-  Droid Army = {
-    special: Indomitable Force: Takes no damage for a turn after making a attack
-    alignment: Sith
-  }
-
-  Gungan Grand Army = {
-    special: A friend in need: crickets
-    alignment: Republic
-  }
-
-  Imperial Army = {
-    special: Prowess of the Sith: Lowers enemy evasion 
-    alignment: Sith
-  }
-
-  Republic Army = {
-    special: Backup: Call in an extra attack from space
-    alignment: Sith
-  }
-
-  Rebel Army = {
-    special: Gurrella warfare: 
-    alignment: Republic
-  }
-
-
-*/
-
-
-// Create a menu where the player can pick their army
-
-// should be six characters with different stats
-
-// when fighting randomly choose between ground and space
-
-// 
+  I wanted to learn how to use 
+  - factory patterns
+  - Observer patterns
+*/ 
 
 // Define the armies and their stats
 // Balancing the armies will be the hardest part
@@ -258,7 +220,9 @@ const Game = {
     gameState: 'menu',
     // keep track of which person is picking a character in the menu
     menuState: 'player',
+    // keep track of players army
     playerChoice: null,
+    // keep track of enemy army
     enemyChoice: null,
     // keep track of which turn it is in the game
     turn: '',
@@ -302,18 +266,10 @@ const Game = {
     this.data.remainingArmies = armies.map(item => item.name);
     //this.update();
   },
-  update: function () {
-    // render elements that have been updated
-    this.render();
+  update: function (data) {
+    this.data = data;
     //update the dom event listeners
     this.handleInput();
-  },
-  render: function () {
-    switch (this.data.gameState) {
-      case 'menu': renderMenu(this); break;
-      case 'playing': renderGame(this); break;
-      case 'end': renderEnd(this); break;
-    }
   },
   handleInput: function () {
     switch (this.data.gameState) {
@@ -322,37 +278,6 @@ const Game = {
       case 'end': handleInputEnd(this); break;
     }
   }
-}
-
-function renderMenu(context) {
-  // context = this
-  // side effect is it clears the event listeners
-  $("#army-wrapper").empty();
-  if (context.data.menuState === 'player') {
-    $(".menu-intro-instructions").text("Select Your Army:");
-  } else if (context.data.menuState === 'enemy') {
-    $(".menu-intro-instructions").text("Select the Enemy Army:");
-  }
-  $.each(context.data.remainingArmies, function (key, army) {
-    //console.log(key, army)
-    armies.forEach(function (item) {
-      if (item.name === army) {
-        $("#army-wrapper").append(`
-           <div class="menu-army" name="${item.name}">
-             <img class="menu-army-img ${item.alignment}" src="./assets/images/${item.picture.ground}"></img>
-             <h2 class="menu-army-title" >${item.name}</h2>
-           </div>`)
-      }
-    });
-  });
-}
-function renderGame(context) {
-  // context = this
-
-}
-
-function renderEnd(context) {
-  //status is our win or lose
 }
 
 function handleInputMenu(context) {
@@ -371,9 +296,52 @@ function handleInputMenu(context) {
       $('#menu').toggleClass('zoomout');
       $('#game').toggleClass('zoomin');
     }
-    gameObserver.notify();
+    gameObserver.notify(context.data);
   })
 }
+
+
+const gameView = {
+  data: {},
+  update(data){
+    this.data = data;
+    switch (data.gameState) {
+      case 'menu': this.renderMenu(data); break;
+      case 'playing': this.renderGame(this); break;
+      case 'end': this.renderEnd(this); break;
+    }
+  },
+  renderMenu(data) {
+    // context = this
+    // side effect is it clears the event listeners
+    $("#army-wrapper").empty();
+    if (data.menuState === 'player') {
+      $(".menu-intro-instructions").text("Select Your Army:");
+    } else if (data.menuState === 'enemy') {
+      $(".menu-intro-instructions").text("Select the Enemy Army:");
+    }
+    $.each(data.remainingArmies, function (key, army) {
+      //console.log(key, army)
+      armies.forEach(function (item) {
+        if (item.name === army) {
+          $("#army-wrapper").append(`
+             <div class="menu-army" name="${item.name}">
+               <img class="menu-army-img ${item.alignment}" src="./assets/images/${item.picture.ground}"></img>
+               <h2 class="menu-army-title" >${item.name}</h2>
+             </div>`)
+        }
+      });
+    });
+  },
+  renderGame(data) {
+    // context = this
+  
+  },
+  renderEnd(data) {
+    //status is our win or lose
+  }
+}
+
 
 function handleInputPlaying(context) {
 
@@ -395,9 +363,11 @@ function playSound() {
 }
 
 $(document).ready(function(){
+  // todo these are dependant because of input
+  gameObserver.subscribe(gameView);
   gameObserver.subscribe(Game);
   Game.init();
-  gameObserver.notify();
+  gameObserver.notify(Game.data);
 });
 
 
