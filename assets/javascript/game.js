@@ -1,15 +1,14 @@
 /*
-
-  Game Idea instead of jedi and sith we use armies
+  Game Idea instead of jedi and sith,  armies
 
   space or ground battles are randomly chosen, maybe just theme.
 
   instead of direct numbers players gain more power in the realm of number of attacks
 
   I wanted to learn how to use 
-  - factory patterns
-  - Observer patterns
-*/ 
+  - factory pattern
+  - Observer pattern
+*/
 
 // Define the armies and their stats
 // Balancing the armies will be the hardest part
@@ -197,16 +196,16 @@ function createArmy(army) {
 // const subcriberFunction = subscriber();
 
 // create an observer that will update our object when things change
-function observer(){
+function observer() {
   let observers = [];
   return {
-    subscribe(callback){
+    subscribe(callback) {
       observers.push(callback);
     },
-    unsubscribe(f){
+    unsubscribe(f) {
       observers = observers.filter(subsciber => subsciber !== f);
-    },    
-    notify(data){
+    },
+    notify(data) {
       observers.forEach(observer => observer.update(data));
     }
   }
@@ -294,29 +293,29 @@ function handleInputMenu(context) {
     context.removeArmy($(this).attr('name'));
     //update the dom
     if (context.data.menuState === 'ready') {
-      $('#menu').toggleClass('zoomout');
-      $('#game').toggleClass('zoom');
+      context.data.gameState = "playing";
     }
     gameObserver.notify(context.data);
   })
 }
 
-
 const gameView = {
   data: {},
-  init(){
+  init() {
     return this;
   },
-  update(data){
+  update(data) {
     this.data = data;
+    //handle visual transistions
+    this.transition(this.data.gameState);
+    //render based on state
     switch (data.gameState) {
       case 'menu': this.renderMenu(data); break;
-      case 'playing': this.renderGame(this); break;
-      case 'end': this.renderEnd(this); break;
+      case 'playing': this.renderGame(data); break;
+      case 'end': this.renderEnd(data); break;
     }
   },
   renderMenu(data) {
-    // context = this
     // side effect is it clears the event listeners
     $("#army-wrapper").empty();
     if (data.menuState === 'player') {
@@ -325,24 +324,36 @@ const gameView = {
       $(".menu-intro-instructions").text("Select the Enemy Army:");
     }
     $.each(data.remainingArmies, function (key, army) {
-      //console.log(key, army)
       armies.forEach(function (item) {
         if (item.name === army) {
           $("#army-wrapper").append(`
              <div class="menu-army" name="${item.name}">
                <img class="menu-army-img ${item.alignment}" src="./assets/images/${item.picture.ground}"></img>
                <h2 class="menu-army-title" >${item.name}</h2>
-             </div>`)
+             </div>`);
         }
       });
     });
   },
   renderGame(data) {
     // context = this
-  
+    console.log('moved to game state');
+    $('#game').text('test');
   },
   renderEnd(data) {
     //status is our win or lose
+  },
+  transition(to){
+    console.log(to)
+    switch(to){
+      case 'menu': break;
+      case 'playing': 
+      $('#menu').toggleClass('zoomout');
+      $('#game').toggleClass('zoom');
+      break;
+      case 'end': break;
+    }
+    
   }
 }
 
@@ -366,12 +377,13 @@ function playSound() {
   // });
 }
 
-$(document).ready(function(){
+$(document).ready(function () {
   // todo these are dependant because of input
-  // initialize the view
+  // initialize the view and subscribe to data changes
   gameObserver.subscribe(gameView.init());
-  // initialize the game logic
+  // initialize the game logic and subscribe to data changes
   gameObserver.subscribe(gameModel.init());
+  // call notify from gameObvserver to setup the game
   gameObserver.notify(gameModel.data);
 });
 
