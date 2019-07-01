@@ -1,13 +1,26 @@
 /*
   Game Idea instead of jedi and sith,  armies
 
-  space or ground battles are randomly chosen, maybe just theme.
+  space or ground battles are randomly chosen.
 
   instead of direct numbers players gain more power in the realm of number of attacks
 
   I wanted to learn how to use 
   - factory pattern
   - Observer pattern
+  - Sub/Pub pattern 
+
+  I know it is a litte bit overkill...
+
+  logic flow:
+
+  3 main parts:
+  - gameModel: handles all the logic and input
+  - gameObserver: acts as the intermediary between logic and view
+  - gameView: handles dom manipulation
+
+  - functionSubscriber: used to handle music, not very effecient because of a lack of event handling....
+  - createArmy: factory function used to create player and enemy armies
 */
 
 // Define the armies and their stats
@@ -15,13 +28,11 @@
 const armies = [
   {
     name: 'Alliance Army',
-    power: 10,
+    power: 12,
     retaliation: 10,
     attacks: 2,
-    maxHp: 50,
-    evasion: 5,
-    //Madines Rules: deals double damage when hp is low
-    special: function () { },
+    maxHp: 60,
+    evasion: 3,
     alignment: "Republic",
     picture: {
       ground: 'Alliance Army-ground.png',
@@ -30,13 +41,11 @@ const armies = [
   },
   {
     name: 'Droid Army',
-    power: 10,
-    retaliation: 10,
-    attacks: 2,
-    maxHp: 50,
-    evasion: 2,
-    //Indomitable Force: Takes no damage for a turn after making a attack
-    special: function () { },
+    power: 6,
+    retaliation: 6,
+    attacks: 3,
+    maxHp: 45,
+    evasion: 5,
     alignment: "Sith",
     picture: {
       ground: 'droid army-ground.jpg',
@@ -45,13 +54,11 @@ const armies = [
   },
   {
     name: 'Gungan Grand Army',
-    power: 10,
-    retaliation: 10,
+    power: 8,
+    retaliation: 8,
     attacks: 2,
-    maxHp: 50,
-    evasion: 2,
-    //special: Gungan Shields: increases evasion by *2?
-    special: function () { },
+    maxHp: 60,
+    evasion: 4,
     alignment: "Republic",
     picture: {
       ground: 'Gungan-ground.jpg',
@@ -60,13 +67,11 @@ const armies = [
   },
   {
     name: 'Imperial Army',
-    power: 15,
-    retaliation: 15,
+    power: 12,
+    retaliation: 6,
     attacks: 2,
-    maxHp: 50,
-    evasion: 2,
-    //Prowess of the Sith: Lowers enemy evasion 
-    special: function () { },
+    maxHp: 70,
+    evasion: 3,
     alignment: "Sith",
     picture: {
       ground: 'imperial army-ground.jpg',
@@ -75,13 +80,11 @@ const armies = [
   },
   {
     name: 'Republic Army',
-    power: 10,
-    retaliation: 10,
+    power: 11,
+    retaliation: 9,
     attacks: 2,
-    maxHp: 50,
+    maxHp: 60,
     evasion: 2,
-    //Backup: Call in an extra attack from space
-    special: function () { },
     alignment: "Sith",
     picture: {
       ground: 'republic-ground.png',
@@ -90,13 +93,11 @@ const armies = [
   },
   {
     name: 'Rebel Army',
-    power: 10,
-    retaliation: 10,
-    attacks: 2,
+    power: 6,
+    retaliation: 6,
+    attacks: 3,
     maxHp: 50,
-    evasion: 2,
-    //Gurrella warfare: 
-    special: function () { },
+    evasion: 6,
     alignment: "Republic",
     picture: {
       ground: 'rebel-ground.jpg',
@@ -105,29 +106,7 @@ const armies = [
   }
 ]
 
-
-// to do go find sounds for fight
-// list of sound effects
-const soundEffects = {
-  music: [
-    "./assets/sounds/Asteroid chase.mp3",
-    "./assets/sounds/falcon.mp3"
-  ],
-  battle: {
-    fire: [
-      "./assets/sounds/tiefighter.mp3",
-      "./assets/sounds/xwingfire.mp3",
-      "./assets/sounds/turretfire.mp3"
-    ],
-    exposion: [
-      "./assets/sounds/explode1.mp3",
-      "./assets/sounds/explode2.mp3"
-    ]
-  },
-  alarm: "./assets/sounds/Battle alarm.mp3"
-}
-
-// Army factory function
+// Army factory function takes an army object and uses it to create a 
 function createArmy(army) {
   this.hp = army.maxHp;
   this.power = army.power;
@@ -135,7 +114,8 @@ function createArmy(army) {
   this.attacks = army.attacks;
   this.evasion = army.evasion;
   this.retaliation = army.retaliation;
-  this.special = army.special;
+  this.picture = army.picture;
+  this.alignment = army.alignment;
   this.attack = function (evasion = 0) {
     //handles attack damage
     let damage = 0;
@@ -156,44 +136,85 @@ function createArmy(army) {
     }
     damage = damage - evasion;
     // make sure the enemy does damage
-    if (damage < 0) damage = this.power;
+    if (damage < 0) damage = 0;
     return damage;
   }
   this.levelUp = function () {
     // when player levels up increase number of attacks
     this.attacks += 1;
-  }
-  this.useSpecial = function () {
-    // not completely definite yet.
-    this.special();
+    this.evasion + 2;
   }
   return this;
 }
 
-// create a subscriber for events mainly if we need to do updates
-// function subscriber() {
-//   let subscribers = {};
-//   return {
-//     publish(event, callback) {
-//       // method that adds updated
-//       // if the event does not exist add the event
-//       if (!subscribers[event]) {
-//         subscribers[event] = [];
-//       }
-//       // add callback in event as an array
-//       subscribers[event].push(callback);
-//     },
-//     subscribe(event, data) {
-//       //check to see if event exists
-//       if (!subscribers[event]) return;
-//       // call all callbacks registered to that event
-//       subscribers[event].forEach(subscriberCallback =>
-//         subscriberCallback(data));
-//     }
-//   }
-// }
+// create a subscriber for music events...
+// todo? fix this so i can track when the music ends... then update the dom
+function subscriber() {
+  let subscribers = {};
+  return {
+    publish(event, callback) {
+      // method that adds updated
+      // if the event does not exist add the event
+      if (!subscribers[event]) {
+        subscribers[event] = [];
+      }
+      // add callback in event as an array
+      subscribers[event].push(callback);
+    },
+    subscribe(event, data) {
+      //check to see if event exists
+      if (!subscribers[event]) return;
+      // call all callbacks registered to that event
+      subscribers[event].forEach(subscriberCallback =>
+        subscriberCallback(data));
+    }
+  }
+}
 
-// const subcriberFunction = subscriber();
+const subscriberFunction = subscriber();
+
+
+function playSound(trackName, volume, repeat = false) {
+  // need to figure out how to play a sound then play another right after...
+  console.log('audio')
+  let audio = new Audio(`./assets/sounds/${trackName}`);
+  audio.volume = volume;
+  audio.loop = repeat;
+  audio.play();
+}
+
+// list of sound effects
+const soundEffects = {
+  music: [
+    "Asteroid chase.mp3",
+    "Falcon.mp3"
+  ],
+  fire: [
+    "tiefighter.mp3",
+    "xwingfire.mp3",
+    "turretfire.mp3"
+  ],
+  explosion: [
+    "explode1.mp3",
+    "explode2.mp3"
+  ],
+  alarm: "Battle alarm.mp3"
+}
+
+subscriberFunction.publish('start-game-music', () => {
+  let chosen = soundEffects.music[Math.floor(Math.random() * soundEffects.music.length)];
+  console.log(chosen)
+  playSound(chosen, 0.1, true);
+});
+subscriberFunction.publish('fire', () => {
+  let chosen = soundEffects.fire[Math.floor(Math.random() * soundEffects.fire.length)];
+  playSound(chosen, 0.2);
+});
+subscriberFunction.publish('explode', () => {
+  let chosen = soundEffects.explosion[Math.floor(Math.random() * soundEffects.explosion.length)];
+  playSound(chosen, 0.2);
+})
+subscriberFunction.publish('alarm', () => playSound(soundEffects.alarm, 0.1));
 
 // create an observer that will update our object when things change
 function observer() {
@@ -210,8 +231,9 @@ function observer() {
     }
   }
 }
-
+// initialize the observer
 const gameObserver = new observer();
+
 // Create Menu Logic
 const gameModel = {
   data: {
@@ -223,21 +245,51 @@ const gameModel = {
     playerChoice: null,
     // keep track of enemy army
     enemyChoice: null,
-    // keep track of which turn it is in the game
-    turn: '',
     // keep track of the remaining armies
-    remainingArmies: []
+    remainingArmies: [],
+    // ground or space battle
+    gameLocation: 'ground',
+    // 
+    hasWon: false,
   },
-  setTurn: function (whosTurn) {
-    // can be player or computer
-    this.data.turn = whosTurn;
+  init: function () {
+    this.setGameState('menu');
+    this.data.remainingArmies = armies.map(item => item.name);
+    //this.update();
+    subscriberFunction.subscribe('start-game-music');
+    return this;
+  },
+  update: function () {
+    // if player has died
+    if (this.data.gameState === "playing" && this.data.playerChoice.hp <= 0) {
+      // don't neet to set haswon since it is already false
+      this.setGameState('end');
+      //notify view compaonent of the change
+      gameObserver.notify(this.data);
+    }
+    // if enemy has died
+    if (this.data.gameState === "playing" && this.data.enemyChoice.hp <= 0) {
+      // if player kills all enemies
+      if (this.data.remainingArmies.length === 0) {
+        this.data.hasWon = true;
+        this.setGameState('end');
+        gameObserver.notify(this.data);
+      } else {
+        this.setMenuState('enemy');
+        this.setGameState('menu');
+        this.data.playerChoice.levelUp();
+      }
+      gameObserver.notify(this.data);
+    }
+    this.handleInput();
   },
   setGameState: function (newState) {
     // states can be menu playing end?
     this.data.gameState = newState;
   },
-  setMenuState: function (newState) {
-    this.data.menuState = newState;
+  setMenuState: function (state) {
+    // states = ['player', 'enemy', 'ready'];
+    this.data.menuState = state;
   },
   setArmy: function (armyName, user) {
     // create the army the player picks of the user specified
@@ -252,24 +304,16 @@ const gameModel = {
     // filter through armies to return the one the player picked
     return armies.filter(function (item) {
       if (item.name === armyName) {
-        return item
+        return item;
       }
     })[0];
   },
   removeArmy: function (armyName) {
     this.data.remainingArmies = this.data.remainingArmies.filter(item => item !== armyName);
   },
-  init: function () {
-    this.setGameState('menu');
-    this.setTurn('player');
-    this.data.remainingArmies = armies.map(item => item.name);
-    //this.update();
-    return this;
-  },
-  update: function (data) {
-    this.data = data;
-    //update the dom event listeners
-    this.handleInput();
+  setLocation: function () {
+    let locations = ['ground', 'space'];
+    this.data.gameLocation = locations[Math.floor(Math.random() * 2)];
   },
   handleInput: function () {
     switch (this.data.gameState) {
@@ -277,41 +321,88 @@ const gameModel = {
       case 'playing': handleInputPlaying(this); break;
       case 'end': handleInputEnd(this); break;
     }
+  },
+  handleCombat: function () {
+    this.data.enemyChoice.hp -= this.data.playerChoice.attack(this.data.enemyChoice.evasion);
+    //keep the enemy from attaking you  after they die!!!
+    if (this.data.enemyChoice.hp > 0) {
+      this.data.playerChoice.hp -= this.data.enemyChoice.retaliate(this.data.playerChoice.evasion);
+    }
+  },
+  reset() {
+    this.data.hasWon = false;
+    this.data.gameLocation = 'ground';
+    this.data.gameState = 'menu';
+    this.data.menuState = 'player';
+    this.data.playerChoice = null;
+    this.data.enemyChoice = null;
+    this.data.remainingArmies = armies.map(item => item.name);
   }
 }
 
+// input handlers logical only
 function handleInputMenu(context) {
   $('.menu-army').click(function () {
     if (context.data.menuState === 'player') {
+      // set players army
       context.setArmy($(this).attr('name'), 'player');
+      // move to next menuState
       context.setMenuState('enemy');
+      // remove the chosen from the remaining armies
+      context.removeArmy($(this).attr('name'));
     } else if (context.data.menuState === 'enemy') {
+      // set enemies army
       context.setArmy($(this).attr('name'), 'enemy');
+      // move to next menuState
       context.setMenuState('ready');
+      // remove the chosen from the remaining armies
+      context.removeArmy($(this).attr('name'));
+      // sets the space or ground for the battle
+      context.setLocation();
     }
-    // remove the chosen from the remaining armies
-    context.removeArmy($(this).attr('name'));
-    //update the dom
     if (context.data.menuState === 'ready') {
+      // if the menu state is ready to transition set gameState = playing
+      subscriberFunction.subscribe('alarm');
       context.data.gameState = "playing";
     }
+    //trigger view update
     gameObserver.notify(context.data);
   })
 }
 
+function handleInputPlaying(context) {
+  $('#attack').on('click', function () {
+    // gameModel will handle the hp
+    context.handleCombat();
+    // make pew noises
+    subscriberFunction.subscribe('fire');
+    // tell the view to update
+    gameObserver.notify(context.data);
+  })
+}
+
+function handleInputEnd(context) {
+  // todo? handle winning and losing buttons...
+}
+
+// game view handles all visual and audio aspects
 const gameView = {
-  data: {},
   init() {
+    this.previousState = "";
     return this;
   },
   update(data) {
-    this.data = data;
-    //handle visual transistions
-    this.transition(this.data.gameState);
-    //render based on state
+    // use previous to make sure we are not transitioning
+    if (this.previousState !== data.gameState) {
+      // set previousState equal to the new state and carry on
+      this.previousState = data.gameState;
+      // handle visual transistions
+      this.transition(data.gameState);
+    }
+    //render dom based on state
     switch (data.gameState) {
       case 'menu': this.renderMenu(data); break;
-      case 'playing': this.renderGame(data); break;
+      case 'playing': this.renderPlaying(data); break;
       case 'end': this.renderEnd(data); break;
     }
   },
@@ -335,47 +426,48 @@ const gameView = {
       });
     });
   },
-  renderGame(data) {
-    // context = this
-    console.log('moved to game state');
-    $('#game').text('test');
+  renderPlaying(data) {
+    $('#game').empty();
+    $('#game').append(`
+    <div class="game-wrapper">
+      <div class="game-player-wrapper">
+        <img class="game-wrapper-img" src="./assets/images/${data.playerChoice.picture[data.gameLocation]}"/>
+        <div class="health-bar ${data.playerChoice.alignment}-bar">
+          <p>${data.playerChoice.hp}</p>
+        </div>
+      </div>
+      <button id="attack" class="${data.playerChoice.alignment}-attack-button">Attack</button>
+      <div class="game-enemy-wrapper">
+        <img class="game-wrapper-img" src="./assets/images/${data.enemyChoice.picture[data.gameLocation]}"/>
+        <div class="health-bar ${data.enemyChoice.alignment}-bar">
+          <p>${data.enemyChoice.hp}</p>
+        </div>
+      </div>
+    </div>
+    `);
   },
   renderEnd(data) {
-    //status is our win or lose
+    console.log('moved to end state');
   },
-  transition(to){
-    console.log(to)
-    switch(to){
-      case 'menu': break;
-      case 'playing': 
-      $('#menu').toggleClass('zoomout');
-      $('#game').toggleClass('zoom');
-      break;
+  //handle transitions from menu -> <- playing
+  transition(to) {
+    console.log('transition: ', to);
+    switch (to) {
+      case 'menu':
+        $('#menu').removeClass('zoomout');
+        $('#game').removeClass('zoom');
+        break;
+      case 'playing':
+        $('#menu').addClass('zoomout');
+        $('#game').addClass('zoom');
+        //playSound(); fire event to play sound
+        break;
       case 'end': break;
     }
-    
   }
 }
 
 
-function handleInputPlaying(context) {
-
-}
-
-function handleInputEnd(context) {
-
-}
-
-function playSound() {
-  // need to figure out how to play a sound then play another right after...
-  // var audio = new Audio('audio_file.mp3');
-  // audio.play();
-  // audio.volume = .03;
-
-  // audio.play().then(() => {
-  //   this.audioState = false;
-  // });
-}
 
 $(document).ready(function () {
   // todo these are dependant because of input

@@ -13,6 +13,7 @@ body, html{
     padding: 0;
     width: 100%;
     height: 100vh;
+    overflow: hidden;
 }
 
 body{
@@ -103,23 +104,87 @@ h3{
 }
 
 #game{
-    height: 300px;
-    background-color: blue;
     width: 100%;
-    display: flex;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, 100vh);
+    animation-delay: 1s;
+    display: flex;
+}
+
+.game-wrapper{
+    display: flex;
+    flex-direction: row;
+    height: 40vh;
+}
+
+.game-enemy-wrapper{
+    flex-basis: 40%;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-player-wrapper{
+    flex-basis: 40%;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-wrapper-img{
+    height: 80%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.game-enemy-wrapper img{
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+}
+
+
+#attack{
+    flex-basis: 20%;
+    height: 100%;
+    font-size: 2em;
+    background-color: transparent;
+}
+
+.Sith-attack-button {
+    color: red;
+    border: 2px solid red;
+    
+}
+.Republic-attack-button {
+    color: blue;
+    border: 2px solid blue;
+}
+
+.health-bar{
+    height: 20%;
+    text-align: center;
+    color: white;
+    margin: 0;
+    padding: 0;
+    font-size: 3em;
+}
+
+.Sith-bar{
+   background-color: red;
+}
+
+.Republic-bar{
+    background-color: blue;
 }
 
 .zoomout{
-    animation: 2s swooshoffscreen forwards;
+    animation: swooshoffscreen 2s  forwards;
 }
 
 .zoom{
-    animation-delay: 5s;
-    animation: 2s swoosh forwards;
+    animation: swoosh 2s forwards;
+    
 }
 
 @keyframes swooshoffscreen{
@@ -127,14 +192,16 @@ h3{
         transform: translate(-50% , -50%);
     }
     to{
-        transform: translate(-50%, -100vh);
+        transform: translate(-50%, -120vh);
         display: none;
+        visibility: hidden;
     }
 }
 
 @keyframes swoosh{
     from{
         transform: translate(-50% , 100vh);
+        
     }
     to{
         transform: translate(-50% , -50%);
