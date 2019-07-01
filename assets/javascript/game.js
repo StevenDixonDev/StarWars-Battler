@@ -55,7 +55,7 @@ const armies = [
     alignment: "Republic",
     picture: {
       ground: "Gungan-ground.jpg",
-      space: "Gungan-space.png"
+      space: "Gungan.png"
     }
   },
   {
