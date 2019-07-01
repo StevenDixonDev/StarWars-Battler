@@ -35,7 +35,7 @@ const armies = [
   {
     name: "Droid Army",
     power: 6,
-    retaliation: 6,
+    retaliation: 8,
     attacks: 3,
     maxHp: 45,
     evasion: 5,
@@ -50,7 +50,7 @@ const armies = [
     power: 8,
     retaliation: 8,
     attacks: 2,
-    maxHp: 60,
+    maxHp: 80,
     evasion: 4,
     alignment: "Republic",
     picture: {
@@ -60,11 +60,11 @@ const armies = [
   },
   {
     name: "Imperial Army",
-    power: 12,
-    retaliation: 6,
-    attacks: 2,
+    power: 16,
+    retaliation: 8,
+    attacks: 1,
     maxHp: 70,
-    evasion: 3,
+    evasion: 1,
     alignment: "Sith",
     picture: {
       ground: "imperial army-ground.jpg",
@@ -73,8 +73,8 @@ const armies = [
   },
   {
     name: "Republic Army",
-    power: 11,
-    retaliation: 9,
+    power: 12,
+    retaliation: 8,
     attacks: 2,
     maxHp: 60,
     evasion: 2,
@@ -87,7 +87,7 @@ const armies = [
   {
     name: "Rebel Army",
     power: 6,
-    retaliation: 6,
+    retaliation: 10,
     attacks: 3,
     maxHp: 50,
     evasion: 6,
@@ -135,7 +135,7 @@ function createArmy(army) {
   this.levelUp = function() {
     // when player levels up increase number of attacks
     this.attacks += 1;
-    this.evasion += 2;
+    this.evasion += 1;
   };
   return this;
 }
@@ -182,7 +182,7 @@ const soundEffects = {
   music: ["Asteroid chase.mp3", "Falcon.mp3"],
   fire: ["tiefighter.mp3", "xwingfire.mp3", "turretfire.mp3"],
   explosion: ["explode1.mp3", "explode2.mp3"],
-  intro: ["Battle alarm.mp3", "flyby.mp3", "bikeflyby.mp3"]
+  intro: ["Battle alarm.mp3", "flyby.mp3", "bikeflyby.mp3"],
 };
 
 subscriberFunction.publish("start-game-music", () => {
@@ -444,7 +444,9 @@ const gameView = {
                <img class="menu-army-img ${
                  item.alignment
                }" src="./assets/images/${item.picture.ground}"></img>
-               <h2 class="menu-army-title" >${item.name}: ${item.attacks}D${item.power}</h2>
+               <div class="menu-army-title">
+               <h2  >${item.name} | ${item.attacks}D${item.power} | HP: ${item.maxHp}</h2>
+               </div>
              </div>`);
         }
       });
@@ -458,50 +460,62 @@ const gameView = {
         <img class="game-wrapper-img" src="./assets/images/${
           data.playerChoice.picture[data.gameLocation]
         }"/>
-        <div class="health-bar ${data.playerChoice.alignment}-bar">
+        <div class="health-bar">
           <p>HP: ${data.playerChoice.hp}</p>
+          <div class="hpbar ${data.playerChoice.alignment}-bar" style="width: ${this.mapMaxHealth(data.playerChoice)}%"></div>
         </div>
       </div>
-      <button id="attack" class="${
-        data.playerChoice.alignment
-      }-attack-button">Attack</button>
+      <button id="attack" class="${data.playerChoice.alignment}-attack-button">Attack</button>
       <div class="game-enemy-wrapper">
         <img class="game-wrapper-img" src="./assets/images/${
           data.enemyChoice.picture[data.gameLocation]
         }"/>
-        <div class="health-bar ${data.enemyChoice.alignment}-bar">
+        <div class="health-bar">
           <p>HP: ${data.enemyChoice.hp}</p>
+          <div class="hpbar ${data.enemyChoice.alignment}-bar" style="width: ${this.mapMaxHealth(data.enemyChoice)}%"></div>
         </div>
       </div>
     </div>
     `);
   },
+  mapMaxHealth(army){
+    // map the hp to a percentage 50 hp -> 100% , 40 hp -> 90
+    let maxHP = armies.filter(item => item.name === army.name);
+    let currentHP = (army.hp < 0)? 0 : army.hp;
+    return Math.floor((currentHP / maxHP[0].maxHp) * 100);
+  },
   renderEnd(data) {
     // todo render end state
     $("#end").empty();
-    $("#end").append(`
-    <div>
-      ${data.hasWon}
-      <button id="reset">reset</button>
-    </div>
-    `);
+    if(data.hasWon){
+      $("#end").append(`
+        <h1>You Have Conquered the Galaxy</h1>
+        <button id="reset">Play again?</button>
+      `);
+    }else{
+      $("#end").append(`
+        <h1>You have failed me for the last time.</h1>
+        <button id="reset">Play again?</button>
+      `);
+    }
+   
   },
   //handle transitions from menu -> <- playing
   transition(to) {
     console.log("transition: ", to);
     switch (to) {
       case "menu":
-        $("#menu").removeClass("zoomout");
-        $("#game").removeClass("zoom");
-        $("#end").removeClass("zoom");
+        $("#menu").animate({top: "50%"}, 400, "linear");
+        $("#game").animate({top: "150%", opacity: 1}, 400, "linear");
+        $("#end").animate({top: "150%"}, 500, "linear");
         break;
       case "playing":
-        $("#menu").addClass("zoomout");
-        $("#game").addClass("zoom");
+        $("#menu").animate({top: "-50%"}, 500, "linear");
+        $("#game").animate({top: "-70%"}, 500, "linear");
         break;
       case "end":
-        $("#game").removeClass("zoom");
-        $("#end").addClass("zoom");
+        $("#game").animate({opacity: 0, top: "150%"}, 500, "linear");
+        $("#end").animate({top: "-70%"}, 1000, "linear");
         break;
     }
   }
