@@ -1,6 +1,3 @@
-# Crystal Collector and Star Wars
-
-A crystal collecting game made with Jquery
-
+# Star Wars Armies Battler Game
 
 A Star Wars RPG made with Jquery
