@@ -224,33 +224,3 @@ h3{
     font-size: 2em;
 }
 
-
-.zoomout{
-    animation: swooshoffscreen 2s forwards;
-}
-
-.zoom{
-    animation: swoosh 2s forwards;
-    
-}
-
-@keyframes swooshoffscreen{
-    from{
-        transform: translate(-50% , -50%);
-    }
-    to{
-        transform: translate(-50%, -180vh);
-        display: none;
-    }
-}
-
-@keyframes swoosh{
-    from{
-        transform: translate(-50% , 100vh);
-        
-    }
-    to{
-        transform: translate(-50% , -50%);
-        display: flex;
-    }
-}

@@ -149,18 +149,14 @@ function subscriber() {
       // method that adds updated
       // if the event does not exist add the event
       if (!subscribers[event]) {
-        subscribers[event] = [];
+        subscribers[event] = callback;
       }
-      // add callback in event as an array
-      subscribers[event].push(callback);
     },
     subscribe(event, data) {
       //check to see if event exists
       if (!subscribers[event]) return;
       // call all callbacks registered to that event
-      subscribers[event].forEach(subscriberCallback =>
-        subscriberCallback(data)
-      );
+      return subscribers[event](data);
     }
   };
 }
@@ -170,11 +166,10 @@ const subscriberFunction = subscriber();
 function playSound(trackName, volume, repeat = false) {
   // Todo getting a random dom error about music...
   // need to figure out how to play a sound then play another right after...
-  console.log("audio");
   let audio = new Audio(`./assets/sounds/${trackName}`);
   audio.volume = volume;
   audio.loop = repeat;
-  audio.play();
+  return audio.play();
 }
 
 // list of sound effects
@@ -183,31 +178,38 @@ const soundEffects = {
   fire: ["tiefighter.mp3", "xwingfire.mp3", "turretfire.mp3"],
   explosion: ["explode1.mp3", "explode2.mp3"],
   intro: ["Battle alarm.mp3", "flyby.mp3", "bikeflyby.mp3"],
+  outro: ["Lasttime.mp3", "failmeagain.mp3", "laughing.mp3"]
 };
 
 subscriberFunction.publish("start-game-music", () => {
   let chosen =
     soundEffects.music[Math.floor(Math.random() * soundEffects.music.length)];
-  console.log(chosen);
-  playSound(chosen, 0.1, true);
+  return playSound(chosen, 0.1, true);
 });
 subscriberFunction.publish("fire", () => {
   let chosen =
     soundEffects.fire[Math.floor(Math.random() * soundEffects.fire.length)];
-  playSound(chosen, 0.2);
+  return playSound(chosen, 0.2);
 });
 subscriberFunction.publish("explode", () => {
   let chosen =
     soundEffects.explosion[
       Math.floor(Math.random() * soundEffects.explosion.length)
     ];
-  playSound(chosen, 0.2);
+  return playSound(chosen, 0.2);
 });
 subscriberFunction.publish("intro", () => {
   let chosen =
     soundEffects.intro[Math.floor(Math.random() * soundEffects.intro.length)];
-  playSound(chosen, 0.1);
+  return playSound(chosen, 0.1);
 });
+
+subscriberFunction.publish("outro", () => {
+  let chosen =
+    soundEffects.outro[Math.floor(Math.random() * soundEffects.outro.length)];
+  return playSound(chosen, 0.3);
+});
+
 
 // create an observer that will update our object when things change
 function observer() {
@@ -259,7 +261,11 @@ const gameModel = {
         // don't neet to set haswon since it is already false
         this.setGameState("end");
         //notify view compaonent of the change
-        gameObserver.notify(this.data);
+        subscriberFunction.subscribe("explode").then(()=>{
+          // wait till audio is done
+          // tell the view to update
+         gameObserver.notify(this.data);
+        });
       } else if (this.data.enemyChoice.hp <= 0) {
         // if player kills all enemies
         if (this.data.remainingArmies.length === 0) {
@@ -271,7 +277,11 @@ const gameModel = {
           this.setGameState("menu");
           this.data.playerChoice.levelUp();
         }
-        gameObserver.notify(this.data);
+        subscriberFunction.subscribe("explode").then(()=>{
+          // wait till audio is done
+          // tell the view to update
+         gameObserver.notify(this.data);
+        });
       }
     }
     // refire handlers after dom updates
@@ -387,9 +397,11 @@ function handleInputPlaying(context) {
     // gameModel will handle the hp
     context.handleCombat();
     // make pew noises
-    subscriberFunction.subscribe("fire");
-    // tell the view to update
+   subscriberFunction.subscribe("fire").then(()=>{
+     // wait till audio is done
+     // tell the view to update
     gameObserver.notify(context.data);
+   });
   });
 }
 
@@ -412,7 +424,7 @@ const gameView = {
       // set previousState equal to the new state and carry on
       this.previousState = data.gameState;
       // handle visual transistions
-      this.transition(data.gameState);
+      this.transition(data.gameState, data);
     }
     //render dom based on state
     switch (data.gameState) {
@@ -440,12 +452,14 @@ const gameView = {
       armies.forEach(function(item) {
         if (item.name === army) {
           $("#army-wrapper").append(`
-             <div class="menu-army" name="${item.name}">
-               <img class="menu-army-img ${
+             <div class='menu-army' name='${item.name}'>
+               <img class='menu-army-img ${
                  item.alignment
-               }" src="./assets/images/${item.picture.ground}"></img>
-               <div class="menu-army-title">
-               <h2  >${item.name} | ${item.attacks}D${item.power} | HP: ${item.maxHp}</h2>
+               }' src='./assets/images/${item.picture.ground}'></img>
+               <div class='menu-army-title'>
+               <h2  >${item.name} | ${item.attacks}D${item.power} | HP: ${
+            item.maxHp
+          }</h2>
                </div>
              </div>`);
         }
@@ -455,67 +469,81 @@ const gameView = {
   renderPlaying(data) {
     $("#game").empty();
     $("#game").append(`
-    <div class="game-wrapper">
-      <div class="game-player-wrapper">
-        <img class="game-wrapper-img" src="./assets/images/${
+    <div class='game-wrapper'>
+      <div class='game-player-wrapper'>
+        <img class='game-wrapper-img' src='./assets/images/${
           data.playerChoice.picture[data.gameLocation]
-        }"/>
-        <div class="health-bar">
+        }'/>
+        <div class='health-bar'>
           <p>HP: ${data.playerChoice.hp}</p>
-          <div class="hpbar ${data.playerChoice.alignment}-bar" style="width: ${this.mapMaxHealth(data.playerChoice)}%"></div>
+          <div class='hpbar ${
+            data.playerChoice.alignment
+          }-bar' style='width: ${this.mapMaxHealth(data.playerChoice)}%'></div>
         </div>
       </div>
-      <button id="attack" class="${data.playerChoice.alignment}-attack-button">Attack</button>
-      <div class="game-enemy-wrapper">
-        <img class="game-wrapper-img" src="./assets/images/${
+      <button id='attack' class='${
+        data.playerChoice.alignment
+      }-attack-button'>Attack</button>
+      <div class='game-enemy-wrapper'>
+        <img class='game-wrapper-img' src='./assets/images/${
           data.enemyChoice.picture[data.gameLocation]
-        }"/>
-        <div class="health-bar">
+        }'/>
+        <div class='health-bar'>
           <p>HP: ${data.enemyChoice.hp}</p>
-          <div class="hpbar ${data.enemyChoice.alignment}-bar" style="width: ${this.mapMaxHealth(data.enemyChoice)}%"></div>
+          <div class='hpbar ${
+            data.enemyChoice.alignment
+          }-bar' style='width: ${this.mapMaxHealth(data.enemyChoice)}%'></div>
         </div>
       </div>
     </div>
     `);
   },
-  mapMaxHealth(army){
+  mapMaxHealth(army) {
     // map the hp to a percentage 50 hp -> 100% , 40 hp -> 90
     let maxHP = armies.filter(item => item.name === army.name);
-    let currentHP = (army.hp < 0)? 0 : army.hp;
+    let currentHP = army.hp < 0 ? 0 : army.hp;
     return Math.floor((currentHP / maxHP[0].maxHp) * 100);
   },
   renderEnd(data) {
     // todo render end state
     $("#end").empty();
-    if(data.hasWon){
+    if (data.hasWon) {
       $("#end").append(`
         <h1>You Have Conquered the Galaxy</h1>
-        <button id="reset">Play again?</button>
+        <button id='reset'>Play again?</button>
       `);
-    }else{
+    } else {
       $("#end").append(`
         <h1>You have failed me for the last time.</h1>
-        <button id="reset">Play again?</button>
+        <button id='reset'>Play again?</button>
       `);
     }
-   
   },
   //handle transitions from menu -> <- playing
-  transition(to) {
+  transition(to, data) {
     console.log("transition: ", to);
     switch (to) {
       case "menu":
-        $("#menu").animate({top: "50%"}, 400, "linear");
-        $("#game").animate({top: "150%", opacity: 1}, 400, "linear");
-        $("#end").animate({top: "150%"}, 500, "linear");
+        $("#end").animate({ top: "150%" }, 300, "linear",  ()=>{
+          $("#game").animate({ top: "150%"}, 300, "linear",  ()=>{
+            $("#menu").animate({ top: "50%" }, 300, "linear");
+          });
+        });
         break;
       case "playing":
-        $("#menu").animate({top: "-50%"}, 500, "linear");
-        $("#game").animate({top: "-70%"}, 500, "linear");
+        $("#menu").animate({ top: "-50%" }, 500, "linear", ()=>{
+          $("#game").animate({ top: "-70%" }, 500, "linear");
+        });
         break;
       case "end":
-        $("#game").animate({opacity: 0, top: "150%"}, 500, "linear");
-        $("#end").animate({top: "-70%"}, 1000, "linear");
+        $("#game").animate({ top: "150%" }, 500, "linear", ()=>{
+          $("#end").animate({ top: "-70%" }, 500, "linear", ()=>{
+            if(!data.hasWon){
+              subscriberFunction.subscribe("outro");
+            }
+            
+          });
+        });
         break;
     }
   }
