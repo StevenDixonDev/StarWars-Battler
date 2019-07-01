@@ -174,10 +174,10 @@ function playSound(trackName, volume, repeat = false) {
 
 // list of sound effects
 const soundEffects = {
-  music: ["Asteroid chase.mp3", "Falcon.mp3"],
+  music: ["Asteroidchase.mp3", "Falcon.mp3"],
   fire: ["tiefighter.mp3", "xwingfire.mp3", "turretfire.mp3"],
   explosion: ["explode1.mp3", "explode2.mp3"],
-  intro: ["Battle alarm.mp3", "flyby.mp3", "bikeflyby.mp3"],
+  intro: ["Battlealarm.mp3", "flyby.mp3", "bikeflyby.mp3"],
   outro: ["Lasttime.mp3", "failmeagain.mp3", "laughing.mp3"]
 };
 
