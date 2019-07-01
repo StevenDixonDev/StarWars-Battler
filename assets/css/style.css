@@ -33,7 +33,14 @@ h3{
 }
 
 #end{
-    display: none;
+    width: 100%;
+    height: 30vh;
+    background-color: red;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 100vh);
+    display: flex;
 }
 
 #menu {
@@ -50,7 +57,7 @@ h3{
 .menu-intro-title {
     color: rgb(255, 200, 17);
     text-align: center;
-    margin-bottom: 1em;
+    margin-bottom: .2em;
     font-size: 5em;
 }
 
@@ -58,7 +65,6 @@ h3{
     color: rgb(145, 145, 241);
     text-align: center;
     font-size: 2em;
-    margin-bottom: 2em;
 }
 
 #army-wrapper{
@@ -66,15 +72,15 @@ h3{
     flex-direction: row;
     flex-wrap: wrap;
     align-self: center;
+    margin: 0 auto;
+    justify-content: space-around;
 }
 
 .menu-army {
    height: 300px;
    background-color: rgb(37, 36, 36); 
    transition: flex-basis 500ms ease-in-out;
-   flex-grow: 1;
-   flex-shrink: 1;
-   flex-basis: 0;
+   flex-basis: 30%;
    margin: .5em;
 }
 
@@ -84,7 +90,7 @@ h3{
 
 .menu-army-img {
     width: 100%;
-    height: 90%;
+    height: 80%;
     display: block;
     border: 2px solid rgb(37, 36, 36);
 }
@@ -111,6 +117,7 @@ h3{
     transform: translate(-50%, 100vh);
     animation-delay: 1s;
     display: flex;
+    transition: .3s;
 }
 
 .game-wrapper{
@@ -179,7 +186,7 @@ h3{
 }
 
 .zoomout{
-    animation: swooshoffscreen 2s  forwards;
+    animation: swooshoffscreen 2s forwards;
 }
 
 .zoom{
@@ -192,9 +199,8 @@ h3{
         transform: translate(-50% , -50%);
     }
     to{
-        transform: translate(-50%, -120vh);
+        transform: translate(-50%, -180vh);
         display: none;
-        visibility: hidden;
     }
 }
 
@@ -205,5 +211,6 @@ h3{
     }
     to{
         transform: translate(-50% , -50%);
+        display: flex;
     }
 }
