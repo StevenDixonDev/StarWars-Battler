@@ -154,8 +154,13 @@ h3{
 #attack{
     flex-basis: 20%;
     height: 100%;
-    font-size: 2em;
+    font-size: 3rem;
     background-color: transparent;
+}
+
+#attack:hover{
+    color: white;
+    border: 5px solid white;
 }
 
 .Sith-attack-button {

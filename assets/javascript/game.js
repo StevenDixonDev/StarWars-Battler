@@ -182,7 +182,7 @@ const soundEffects = {
   music: ["Asteroid chase.mp3", "Falcon.mp3"],
   fire: ["tiefighter.mp3", "xwingfire.mp3", "turretfire.mp3"],
   explosion: ["explode1.mp3", "explode2.mp3"],
-  alarm: "Battle alarm.mp3"
+  intro: ["Battle alarm.mp3", "flyby.mp3", "bikeflyby.mp3"]
 };
 
 subscriberFunction.publish("start-game-music", () => {
@@ -203,7 +203,11 @@ subscriberFunction.publish("explode", () => {
     ];
   playSound(chosen, 0.2);
 });
-subscriberFunction.publish("alarm", () => playSound(soundEffects.alarm, 0.1));
+subscriberFunction.publish("intro", () => {
+  let chosen =
+    soundEffects.intro[Math.floor(Math.random() * soundEffects.intro.length)];
+  playSound(chosen, 0.1);
+});
 
 // create an observer that will update our object when things change
 function observer() {
@@ -370,7 +374,7 @@ function handleInputMenu(context) {
     }
     if (context.data.menuState === "ready") {
       // if the menu state is ready to transition set gameState = playing
-      subscriberFunction.subscribe("alarm");
+      subscriberFunction.subscribe("intro");
       context.data.gameState = "playing";
     }
     //trigger view update
@@ -440,7 +444,7 @@ const gameView = {
                <img class="menu-army-img ${
                  item.alignment
                }" src="./assets/images/${item.picture.ground}"></img>
-               <h2 class="menu-army-title" >${item.name}: ${item.power}</h2>
+               <h2 class="menu-army-title" >${item.name}: ${item.attacks}D${item.power}</h2>
              </div>`);
         }
       });
@@ -455,7 +459,7 @@ const gameView = {
           data.playerChoice.picture[data.gameLocation]
         }"/>
         <div class="health-bar ${data.playerChoice.alignment}-bar">
-          <p>${data.playerChoice.hp}</p>
+          <p>HP: ${data.playerChoice.hp}</p>
         </div>
       </div>
       <button id="attack" class="${
@@ -466,7 +470,7 @@ const gameView = {
           data.enemyChoice.picture[data.gameLocation]
         }"/>
         <div class="health-bar ${data.enemyChoice.alignment}-bar">
-          <p>${data.enemyChoice.hp}</p>
+          <p>HP: ${data.enemyChoice.hp}</p>
         </div>
       </div>
     </div>
