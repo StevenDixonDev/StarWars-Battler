@@ -447,7 +447,7 @@ const gameView = {
     `);
   },
   renderEnd(data) {
-    console.log('moved to end state');
+    // todo render end state
   },
   //handle transitions from menu -> <- playing
   transition(to) {
