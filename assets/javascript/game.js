@@ -448,6 +448,7 @@ const gameView = {
     } else if (data.menuState === "enemy") {
       $(".menu-intro-instructions").text("Select the Enemy Army:");
     }
+
     $.each(data.remainingArmies, function(key, army) {
       armies.forEach(function(item) {
         if (item.name === army) {
@@ -541,7 +542,6 @@ const gameView = {
             if(!data.hasWon){
               subscriberFunction.subscribe("outro");
             }
-            
           });
         });
         break;
